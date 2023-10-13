@@ -66,7 +66,7 @@ export default function useFetchTxInfo({ onTxStatusUpdate, updateDelay }: Params
     event: 'collated',
     handler: handleStatusUpdateMessage,
   });
-
+  console.log("queryTX tx: ", hash, " result:", queryResult);
   return {
     ...queryResult,
     socketStatus,

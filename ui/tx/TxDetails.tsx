@@ -16,6 +16,8 @@ import {
 import BigNumber from 'bignumber.js';
 import React from 'react';
 import { scroller, Element } from 'react-scroll';
+import rlp from 'rlp';
+import { utils }from 'rlp'
 
 import config from 'configs/app';
 import clockIcon from 'icons/clock.svg';
@@ -40,12 +42,14 @@ import LogDecodedInputData from 'ui/shared/logs/LogDecodedInputData';
 import RawInputData from 'ui/shared/RawInputData';
 import TextSeparator from 'ui/shared/TextSeparator';
 import TxStatus from 'ui/shared/TxStatus';
+import TxResult from 'ui/shared/TxResult';
 import Utilization from 'ui/shared/Utilization/Utilization';
 import TxDetailsActions from 'ui/tx/details/TxDetailsActions';
 import TxDetailsTokenTransfers from 'ui/tx/details/TxDetailsTokenTransfers';
 import TxRevertReason from 'ui/tx/details/TxRevertReason';
 import TxSocketAlert from 'ui/tx/TxSocketAlert';
 import useFetchTxInfo from 'ui/tx/useFetchTxInfo';
+import _ from 'lodash';
 
 const TxDetails = () => {
   const { data, isPlaceholderData, isError, socketStatus, error } = useFetchTxInfo();
@@ -107,6 +111,23 @@ const TxDetails = () => {
     </Tooltip>
   ) : null;
 
+  // process privacy tx
+  // const raw = data.raw;
+  var cipher;
+  var aad;
+  var isPrivacyTx = false;
+  if (data.raw != null) {
+    const decodedRaw = rlp.decode("0x" + data.raw.substring(4));
+    isPrivacyTx = decodedRaw.length == 11 ? true : false;
+    if (isPrivacyTx) {
+      cipher = utils.bytesToHex(decodedRaw[7]);
+      aad = utils.bytesToHex(decodedRaw[6]);
+    }
+    console.log("cipher:", cipher);
+    console.log("aad", aad);
+  }
+
+
   const divider = (
     <GridItem
       colSpan={{ base: undefined, lg: 2 }}
@@ -116,6 +137,11 @@ const TxDetails = () => {
       borderColor="divider"
     />
   );
+
+  const gray = {
+    color: '#666666',
+    backgroundColor: '#dddddd',
+  }
 
   return (
     <>
@@ -158,6 +184,13 @@ const TxDetails = () => {
             <TxRevertReason { ...data.revert_reason }/>
           </DetailsInfoItem>
         ) }
+        <DetailsInfoItem
+          title="Result"
+          hint="Current transaction state: Finalized"
+          isLoading={ isPlaceholderData }
+        >
+          <TxResult status={ data.status } errorText={ data.status === 'error' ? data.result : undefined } isLoading={ isPlaceholderData }/>
+        </DetailsInfoItem>
         <DetailsInfoItem
           title="Block"
           hint="Block number containing the transaction"
@@ -213,17 +246,24 @@ const TxDetails = () => {
           isLoading={ isPlaceholderData }
           columnGap={ 3 }
         >
-          <AddressEntity
+          { isPrivacyTx ? (
+              <p style={gray}>Hidden</p>
+            ) : (
+              <><AddressEntity
             address={ data.from }
             isLoading={ isPlaceholderData }
-          />
-          { data.from.name && <Text>{ data.from.name }</Text> }
-          { addressFromTags.length > 0 && (
+            />
+             { data.from.name && <Text>{ data.from.name }</Text> }
+            { addressFromTags.length > 0 && (
             <Flex columnGap={ 3 }>
               { addressFromTags }
             </Flex>
-          ) }
+            ) }
+            </>
+            )
+          }
         </DetailsInfoItem>
+
         <DetailsInfoItem
           title={ data.to?.is_contract ? 'Interacted with contract' : 'To' }
           hint="Address (external or contract) receiving the transaction"
@@ -231,6 +271,10 @@ const TxDetails = () => {
           flexWrap={{ base: 'wrap', lg: 'nowrap' }}
           columnGap={ 3 }
         >
+          { isPrivacyTx ? (
+              <p style={gray}>Hidden</p>
+            ) : (
+              <>
           { toAddress ? (
             <>
               { data.to && data.to.hash ? (
@@ -264,6 +308,9 @@ const TxDetails = () => {
           ) : (
             <span>[ Contract creation ]</span>
           ) }
+          </>
+            )
+          }
         </DetailsInfoItem>
         { data.token_transfers && <TxDetailsTokenTransfers data={ data.token_transfers } txHash={ data.hash }/> }
 
@@ -273,15 +320,21 @@ const TxDetails = () => {
           title="Value"
           hint="Value sent in the native token (and USD) if applicable"
           isLoading={ isPlaceholderData }
-        >
+        >          
+        { isPrivacyTx ? (
+          <p style={gray}>Hidden</p>
+        ) : (
           <CurrencyValue
-            value={ data.value }
-            currency={ config.chain.currency.symbol }
-            exchangeRate={ data.exchange_rate }
-            isLoading={ isPlaceholderData }
-            flexWrap="wrap"
-          />
+          value={ data.value }
+          currency={ config.chain.currency.symbol }
+          exchangeRate={ data.exchange_rate }
+          isLoading={ isPlaceholderData }
+          flexWrap="wrap"
+        />
+          )
+        }
         </DetailsInfoItem>
+
         <DetailsInfoItem
           title="Transaction fee"
           hint="Total transaction fee"
@@ -477,6 +530,18 @@ const TxDetails = () => {
                 <LogDecodedInputData data={ data.decoded_input }/>
               </DetailsInfoItem>
             ) }
+            <DetailsInfoItem
+              title="Raw"
+              hint="Raw transaction data. Also included encrypted info"
+            >
+              <RawInputData hex={ data.raw }/>
+            </DetailsInfoItem>
+            <DetailsInfoItem
+              title="Ciphertext"
+              hint="Cipher data: cipher and aad"
+            >
+              <RawInputData hex={ '0x' + cipher + aad }/>
+            </DetailsInfoItem>
           </>
         ) }
       </Grid>

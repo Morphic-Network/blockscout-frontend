@@ -48,6 +48,7 @@ export type Transaction = {
   l1_gas_price?: string;
   l1_gas_used?: string;
   has_error_in_internal_txs: boolean | null;
+  raw: string | null;
 }
 
 export type TransactionsResponse = TransactionsResponseValidated | TransactionsResponsePending;

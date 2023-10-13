@@ -19,6 +19,7 @@ import TxLogs from 'ui/tx/TxLogs';
 import TxRawTrace from 'ui/tx/TxRawTrace';
 import TxState from 'ui/tx/TxState';
 import TxTokenTransfer from 'ui/tx/TxTokenTransfer';
+import TxPoc from 'ui/tx/TxPoc';
 
 const TABS: Array<RoutedTab> = [
   { id: 'index', title: 'Details', component: <TxDetails/> },
@@ -27,6 +28,7 @@ const TABS: Array<RoutedTab> = [
   { id: 'logs', title: 'Logs', component: <TxLogs/> },
   { id: 'state', title: 'State', component: <TxState/> },
   { id: 'raw_trace', title: 'Raw trace', component: <TxRawTrace/> },
+  { id: 'poc', title: 'PoC', component: <TxPoc/> }
 ];
 
 const TransactionPageContent = () => {
