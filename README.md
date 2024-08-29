@@ -6,6 +6,20 @@
     <span> blockchain explorer</span>
 </p>
 
+## Introduction
+
+Blockscout, as a blockchain explorer, is divided into frontend and backend components. This repository is the frontend repository, customized based on Blockscout to accommodate additional features specific to this project. Below is the main page of the frontend:
+![image](https://github.com/user-attachments/assets/e79deb7d-4f2a-4cd2-a997-5ee64c6bad33)
+
+
+PoC viewing page:
+![image](https://github.com/user-attachments/assets/09d6f0c4-bafc-46e1-861a-6e62da1fb60f)
+
+
+Hidden field display for private transactions:
+![image](https://github.com/user-attachments/assets/ddf1c0a9-8346-4d96-b493-5b8f411411c9)
+
+
 ## Running and configuring the app
 
 App is distributed as a docker image. Here you can find information about the [package](https://github.com/blockscout/frontend/pkgs/container/frontend) and its recent [releases](https://github.com/blockscout/frontend/releases).
